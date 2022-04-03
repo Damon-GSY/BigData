@@ -1,0 +1,45 @@
+create table movies(
+    mid string,
+    name string,
+    type string
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="::")
+
+LOAD DATA INPATH "/data/hive/ratings/ratings.dat" into table ratings;
+
+create table users(
+    uid string,
+    sex string,
+    age int,
+    oc string,
+    zcode string
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="::")
+
+create table ratings(
+    uid string,
+    mid string,
+    rate int,
+    times string
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="::")
+
+select u.age, avg(r.rate) avgrate
+    > from users u
+    > join ratings r on u.uid = r.uid
+    > where r.mid = 2116
+    > group by u.age;
+
+select u.sex sex, m.name, avg(r.rate) avgrate, count(*) total
+From user u
+join ratings r on r.uid = u.uid
+join movies m on m.mid = r.mid
+where u.sex = "M"
+group by u.sex, m.name
+Having total >= 50
+Order by avgrate DESC
+limit 10
+
